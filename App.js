@@ -243,18 +243,19 @@ export default function App() {
         timestamp: new Date().toLocaleString('ja-JP'),
       };
 
-const response = await fetch(GAS_URL, {
+// no-cors モードを追加し、GASからの返事を待たずに送信完了とする
+      await fetch(GAS_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'text/plain' }, // ← WebのCORSエラーを回避するおまじない
+        mode: 'no-cors', // ← これを追加！ブラウザのセキュリティブロックを強制回避します
+        headers: {
+          'Content-Type': 'text/plain',
+        },
         body: JSON.stringify(payload),
       });
 
-      const result = await response.json();
-      if (result.status === 'success') {
-        Alert.alert("送信完了", "スプレッドシートに保存されました。");
-      } else {
-        throw new Error(result.message);
-      }
+      // no-cors モードではレスポンス（成功/失敗の返事）を読み取れないため、エラーで止まらなければ成功とみなします
+      Alert.alert("送信完了", "内容を送信しました。");
+      // 必要であればここで form を初期化する処理を入れる
     } catch (e) {
       setSubmitError("送信に失敗しました。URLとネットワークを確認してください。");
     }
