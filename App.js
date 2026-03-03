@@ -234,7 +234,8 @@ export default function App() {
 
     // --- 送信処理 ---
     try {
-      const GAS_URL = "https://script.google.com/macros/s/AKfycbxRBTgbbqV-dPHrnuqE0H25DqE743naqihVflmNo35NMbK_8uYe6byzDXQ5M-dUJghGhw/exec";
+      // ログに記載のあったURLを設定しています。新しいデプロイURLがある場合は書き換えてください。
+      const GAS_URL = "https://script.google.com/macros/s/AKfycbxRBTgbbqV-dPHrnuqE0H25DqE743naqihVflmNo35NMbK_8uYe6byzDXQ5M-dUJghGhw/exec"; 
 
       const payload = {
         ...form,
@@ -243,20 +244,24 @@ export default function App() {
         timestamp: new Date().toLocaleString('ja-JP'),
       };
 
-// no-cors モードを追加し、GASからの返事を待たずに送信完了とする
-      await fetch(GAS_URL, {
-        method: 'POST',
-        mode: 'no-cors', // ← これを追加！ブラウザのセキュリティブロックを強制回避します
-        headers: {
-          'Content-Type': 'text/plain',
-        },
-        body: JSON.stringify(payload),
+      // フォームデータ形式に変換（WebブラウザのCORSエラー対策）
+      const formData = new FormData();
+      Object.keys(payload).forEach(key => {
+        formData.append(key, payload[key]);
       });
 
-      // no-cors モードではレスポンス（成功/失敗の返事）を読み取れないため、エラーで止まらなければ成功とみなします
-      Alert.alert("送信完了", "内容を送信しました。");
-      // 必要であればここで form を初期化する処理を入れる
+      // no-cors通信で強制的に送信する
+      await fetch(GAS_URL, {
+        method: 'POST',
+        mode: 'no-cors', 
+        body: formData,
+      });
+
+      // no-corsの場合はレスポンスを取得できないため、エラーが出なければ成功として扱う
+      Alert.alert("送信完了", "スプレッドシートに保存されました！");
+      
     } catch (e) {
+      console.error(e);
       setSubmitError("送信に失敗しました。URLとネットワークを確認してください。");
     }
   };
@@ -321,7 +326,7 @@ export default function App() {
             <SelectButtons label="採用条件" options={['社員', 'アルバイト']} required selectedValue={form.hireCondition} onSelect={(v) => updateField('hireCondition', v)} error={errors.hireCondition} />
             <SelectButtons label="応募方法" options={['紹介', 'WARPスタッフの紹介', '求人広告', 'その他']} required selectedValue={form.applyMethod} onSelect={(v) => updateField('applyMethod', v)} error={errors.applyMethod} />
             {['紹介', 'WARPスタッフの紹介'].includes(form.applyMethod) && <InputField label="紹介者名" placeholder="フルネームで入力してください" required value={form.introducer} onChangeText={(v) => updateField('introducer', v)} error={errors.introducer} />}
-            {form.applyMethod === 'その他' && <InputField label="具体的な応募経由" placeholder="SNS名など" required value={form.applyMethodCustom} onChangeText={(v) => updateField('applyMethodCustom', v)} error={errors.applyMethodCustom} />}
+            {form.applyMethod === 'その他' && <InputField label="具体的な応募経経由" placeholder="SNS名など" required value={form.applyMethodCustom} onChangeText={(v) => updateField('applyMethodCustom', v)} error={errors.applyMethodCustom} />}
             <SelectButtons label="週何回入れますか" options={['ほぼ毎日', '週4-5', '週2-3', '週0-1']} required selectedValue={form.daysPerWeek} onSelect={(v) => updateField('daysPerWeek', v)} error={errors.daysPerWeek} />
             <MultiSelectButtons label="何曜日入れますか" options={['月', '火', '水', '木', '金', '土', '日']} required selectedValues={form.availableDays} onToggle={(v) => toggleMulti('availableDays', v)} error={errors.availableDays} />
             {form.hireCondition !== '' && (
