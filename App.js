@@ -13,6 +13,7 @@ import {
   Alert,
   Modal,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 
 // --- 共通コンポーネント ---
@@ -45,7 +46,6 @@ const InputField = ({
   </View>
 );
 
-// --- ドロップダウン用コンポーネント ---
 const DropdownSelector = ({ label, options, selectedValue, onSelect, error, required, flex = 1 }) => {
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -98,7 +98,6 @@ const DropdownSelector = ({ label, options, selectedValue, onSelect, error, requ
   );
 };
 
-// --- ボタン選択コンポーネント ---
 const SelectButtons = ({ label, options, selectedValue, onSelect, error, required, customBtnStyle }) => (
   <View style={styles.inputContainer}>
     <View style={styles.labelRow}>
@@ -160,6 +159,8 @@ const WorkHistoryCard = ({ symbol }) => (
 export default function App() {
   const [isAgreed, setIsAgreed] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [form, setForm] = useState({
     name: '', kana: '', gender: '', bloodType: '',
     birthYear: '', birthMonth: '', birthDay: '', 
@@ -220,10 +221,6 @@ export default function App() {
 
     if (form.language.length === 0) newErrors.language = true;
     if (form.availableDays.length === 0) newErrors.availableDays = true;
-    if (form.livingStatus === 'その他' && !form.livingStatusCustom) newErrors.livingStatusCustom = true;
-    if (form.applyMethod === 'その他' && !form.applyMethodCustom) newErrors.applyMethodCustom = true;
-    if (['紹介', 'WARPスタッフの紹介'].includes(form.applyMethod) && !form.introducer) newErrors.introducer = true;
-    if (form.workTime === 'その他' && !form.workTimeCustom) newErrors.workTimeCustom = true;
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -232,37 +229,40 @@ export default function App() {
     }
     if (!isAgreed) { setSubmitError("同意スイッチをオンにしてください。"); return; }
 
-    // --- 送信処理 ---
+    setIsSubmitting(true);
     try {
-      // ログに記載のあったURLを設定しています。新しいデプロイURLがある場合は書き換えてください。
+      // ⚠️ あなたのGASのURLに書き換えてください
       const GAS_URL = "https://script.google.com/macros/s/AKfycbxRBTgbbqV-dPHrnuqE0H25DqE743naqihVflmNo35NMbK_8uYe6byzDXQ5M-dUJghGhw/exec"; 
 
-      const payload = {
-        ...form,
-        language: form.language.join(', '),
-        availableDays: form.availableDays.join(', '),
-        timestamp: new Date().toLocaleString('ja-JP'),
-      };
-
-      // フォームデータ形式に変換（WebブラウザのCORSエラー対策）
-      const formData = new FormData();
-      Object.keys(payload).forEach(key => {
-        formData.append(key, payload[key]);
+      // Webブラウザの制限を回避するためのデータ形式変換
+      const searchParams = new URLSearchParams();
+      Object.keys(form).forEach(key => {
+        if (Array.isArray(form[key])) {
+          searchParams.append(key, form[key].join(', '));
+        } else {
+          searchParams.append(key, form[key]);
+        }
       });
+      searchParams.append('timestamp', new Date().toLocaleString('ja-JP'));
 
-      // no-cors通信で強制的に送信する
+      // 成功率が最も高い no-cors モードで送信
       await fetch(GAS_URL, {
         method: 'POST',
-        mode: 'no-cors', 
-        body: formData,
+        mode: 'no-cors', // これがブラウザのブロックを回避する鍵です
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: searchParams.toString(),
       });
 
-      // no-corsの場合はレスポンスを取得できないため、エラーが出なければ成功として扱う
-      Alert.alert("送信完了", "スプレッドシートに保存されました！");
+      // no-corsは返り値を見られないため、エラーが出なければ成功とみなす
+      Alert.alert("送信完了", "スプレッドシートへの保存処理を開始しました。\n反映まで数秒お待ちください。");
       
     } catch (e) {
       console.error(e);
-      setSubmitError("送信に失敗しました。URLとネットワークを確認してください。");
+      setSubmitError("通信エラーが発生しました。ネットワーク設定を確認してください。");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -326,7 +326,7 @@ export default function App() {
             <SelectButtons label="採用条件" options={['社員', 'アルバイト']} required selectedValue={form.hireCondition} onSelect={(v) => updateField('hireCondition', v)} error={errors.hireCondition} />
             <SelectButtons label="応募方法" options={['紹介', 'WARPスタッフの紹介', '求人広告', 'その他']} required selectedValue={form.applyMethod} onSelect={(v) => updateField('applyMethod', v)} error={errors.applyMethod} />
             {['紹介', 'WARPスタッフの紹介'].includes(form.applyMethod) && <InputField label="紹介者名" placeholder="フルネームで入力してください" required value={form.introducer} onChangeText={(v) => updateField('introducer', v)} error={errors.introducer} />}
-            {form.applyMethod === 'その他' && <InputField label="具体的な応募経経由" placeholder="SNS名など" required value={form.applyMethodCustom} onChangeText={(v) => updateField('applyMethodCustom', v)} error={errors.applyMethodCustom} />}
+            {form.applyMethod === 'その他' && <InputField label="具体的な応募経由" placeholder="SNS名など" required value={form.applyMethodCustom} onChangeText={(v) => updateField('applyMethodCustom', v)} error={errors.applyMethodCustom} />}
             <SelectButtons label="週何回入れますか" options={['ほぼ毎日', '週4-5', '週2-3', '週0-1']} required selectedValue={form.daysPerWeek} onSelect={(v) => updateField('daysPerWeek', v)} error={errors.daysPerWeek} />
             <MultiSelectButtons label="何曜日入れますか" options={['月', '火', '水', '木', '金', '土', '日']} required selectedValues={form.availableDays} onToggle={(v) => toggleMulti('availableDays', v)} error={errors.availableDays} />
             {form.hireCondition !== '' && (
@@ -351,7 +351,19 @@ export default function App() {
           </Section>
 
           <View style={styles.consentCard}><Text style={styles.consentText}>入力内容に間違いありませんか？</Text><Switch value={isAgreed} onValueChange={(v) => { setIsAgreed(v); setSubmitError(""); }} trackColor={{ false: "#767577", true: "#34C759" }} /></View>
-          <TouchableOpacity style={[styles.submitButton, (!isAgreed || submitError !== "") && styles.submitButtonDisabled]} onPress={handleViewSubmit}><Text style={styles.submitButtonText}>内容を確認して送信</Text></TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.submitButton, (!isAgreed || isSubmitting) && styles.submitButtonDisabled]} 
+            onPress={handleViewSubmit}
+            disabled={!isAgreed || isSubmitting}
+          >
+            {isSubmitting ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.submitButtonText}>内容を確認して送信</Text>
+            )}
+          </TouchableOpacity>
+
           {submitError !== "" && <View style={styles.errorBanner}><Text style={styles.errorBannerText}>⚠️ {submitError}</Text></View>}
           <View style={{ height: 60 }} />
         </ScrollView>
