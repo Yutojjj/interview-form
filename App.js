@@ -13,10 +13,7 @@ import {
   Alert,
   Modal,
   FlatList,
-  Dimensions,
 } from 'react-native';
-
-const { width } = Dimensions.get('window');
 
 // --- 共通コンポーネント ---
 const Section = ({ title, children }) => (
@@ -67,7 +64,7 @@ const DropdownSelector = ({ label, options, selectedValue, onSelect, error, requ
         </Text>
       </TouchableOpacity>
 
-      <Modal transparent={true} visible={modalVisible} animationType="fade">
+      <Modal transparent={true} visible={modalVisible} animationType="slide">
         <TouchableOpacity 
           style={styles.modalOverlay} 
           activeOpacity={1} 
@@ -111,11 +108,7 @@ const SelectButtons = ({ label, options, selectedValue, onSelect, error, require
       {options.map((opt) => (
         <TouchableOpacity 
           key={opt}
-          style={[
-            styles.selectBtn, 
-            { width: options.length > 2 ? '48%' : '48%' }, // 基本2列。数が多い場合は調整可
-            selectedValue === opt && styles.selectBtnActive
-          ]} 
+          style={[styles.selectBtn, selectedValue === opt && styles.selectBtnActive]} 
           onPress={() => onSelect(opt)}
         >
           <Text style={[styles.selectBtnText, selectedValue === opt && styles.selectBtnTextActive]}>{opt}</Text>
@@ -138,7 +131,7 @@ const MultiSelectButtons = ({ label, options, selectedValues, onToggle, error, r
         return (
           <TouchableOpacity 
             key={opt}
-            style={[styles.selectBtn, { width: '48%' }, isActive && styles.selectBtnActive]} 
+            style={[styles.selectBtn, isActive && styles.selectBtnActive]} 
             onPress={() => onToggle(opt)}
           >
             <Text style={[styles.selectBtnText, isActive && styles.selectBtnTextActive]}>{opt}</Text>
@@ -193,6 +186,9 @@ export default function App() {
         newForm.workTime = '';
         newForm.workTimeCustom = '';
     }
+    if (key === 'applyMethod' && !['紹介', 'WARPスタッフの紹介'].includes(value)) {
+        newForm.introducer = '';
+    }
     setForm(newForm);
     if (value && value.toString().trim() !== '') {
       setErrors(prev => ({ ...prev, [key]: false }));
@@ -207,7 +203,7 @@ export default function App() {
     updateField(key, list);
   };
 
-  const handleViewSubmit = () => {
+  const handleViewSubmit = async () => {
     setSubmitError("");
     let newErrors = {};
     const requiredList = [
@@ -223,6 +219,11 @@ export default function App() {
 
     if (form.language.length === 0) newErrors.language = true;
     if (form.availableDays.length === 0) newErrors.availableDays = true;
+
+    if (form.livingStatus === 'その他' && !form.livingStatusCustom) newErrors.livingStatusCustom = true;
+    if (form.applyMethod === 'その他' && !form.applyMethodCustom) newErrors.applyMethodCustom = true;
+    if (['紹介', 'WARPスタッフの紹介'].includes(form.applyMethod) && !form.introducer) newErrors.introducer = true;
+    if (form.workTime === 'その他' && !form.workTimeCustom) newErrors.workTimeCustom = true;
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -245,8 +246,7 @@ export default function App() {
             
             <View style={styles.row}>
               <SelectButtons label="性別" options={['男性', '女性']} required selectedValue={form.gender} onSelect={(v) => updateField('gender', v)} error={errors.gender} />
-            </View>
-            <View style={styles.row}>
+              <View style={{ width: 10 }} />
               <SelectButtons label="血液型" options={['A型', 'B型', 'O型', 'AB型']} required selectedValue={form.bloodType} onSelect={(v) => updateField('bloodType', v)} error={errors.bloodType} />
             </View>
 
@@ -256,9 +256,9 @@ export default function App() {
             </View>
             <View style={styles.row}>
               <DropdownSelector flex={3} options={years} selectedValue={form.birthYear} onSelect={(v) => updateField('birthYear', v)} error={errors.birthYear} label="年" />
-              <View style={{ width: 8 }} />
+              <View style={{ width: 5 }} />
               <DropdownSelector flex={2} options={months} selectedValue={form.birthMonth} onSelect={(v) => updateField('birthMonth', v)} error={errors.birthMonth} label="月" />
-              <View style={{ width: 8 }} />
+              <View style={{ width: 5 }} />
               <DropdownSelector flex={2} options={days} selectedValue={form.birthDay} onSelect={(v) => updateField('birthDay', v)} error={errors.birthDay} label="日" />
             </View>
             
@@ -271,28 +271,85 @@ export default function App() {
             <InputField label="携帯番号" placeholder="09012345678" keyboardType="phone-pad" required value={form.phone} onChangeText={(v) => updateField('phone', v)} error={errors.phone} />
             <InputField label="現住所" placeholder="マンション名まで正確に" multiline required value={form.address} onChangeText={(v) => updateField('address', v)} error={errors.address} />
             <InputField label="本籍地" placeholder="都道府県名から" required value={form.domicile} onChangeText={(v) => updateField('domicile', v)} error={errors.domicile} />
+            <View style={styles.row}>
+              <InputField label="身長" placeholder="160cm" value={form.height} onChangeText={(v) => updateField('height', v)} />
+              <View style={{ width: 10 }} />
+              <InputField label="体重" placeholder="48kg" value={form.weight} onChangeText={(v) => updateField('weight', v)} />
+            </View>
           </Section>
 
           <Section title="詳細情報">
             <SelectButtons label="現在の職業 [日中]" options={['学生', 'フリーター', '会社員', 'なし']} required selectedValue={form.jobDay} onSelect={(v) => updateField('jobDay', v)} error={errors.jobDay} />
             <SelectButtons label="現在の職業 [夜間]" options={['キャバクラ等', 'なし']} required selectedValue={form.jobNight} onSelect={(v) => updateField('jobNight', v)} error={errors.jobNight} />
+            
             <SelectButtons label="お住まい" options={['実家', '一人暮らし', 'その他']} required selectedValue={form.livingStatus} onSelect={(v) => updateField('livingStatus', v)} error={errors.livingStatus} />
             {form.livingStatus === 'その他' && (
               <InputField label="具体的な住まい" placeholder="例：寮" required value={form.livingStatusCustom} onChangeText={(v) => updateField('livingStatusCustom', v)} error={errors.livingStatusCustom} />
             )}
+
+            <InputField label="学校名.学年/最終学歴" placeholder="〇〇大学 卒業" required value={form.education} onChangeText={(v) => updateField('education', v)} error={errors.education} />
+            <SelectButtons label="夜職の経験" options={['ある', 'ない']} required selectedValue={form.nightJobExp} onSelect={(v) => updateField('nightJobExp', v)} error={errors.nightJobExp} />
+            
             <MultiSelectButtons label="語学" options={['日本語のみ', '英語', '中国語', 'その他']} required selectedValues={form.language} onToggle={(v) => toggleMulti('language', v)} error={errors.language} />
+            {form.language.includes('その他') && (
+              <InputField label="具体的な語学" placeholder="例：韓国語" value={form.languageCustom} onChangeText={(v) => updateField('languageCustom', v)} />
+            )}
+          </Section>
+
+          <Section title="緊急連絡先">
+            <InputField label="氏名" placeholder="例：山田 太郎" required value={form.emergencyName} onChangeText={(v) => updateField('emergencyName', v)} error={errors.emergencyName} />
+            <InputField label="続柄" placeholder="例：父、母、姉、友人など" required value={form.emergencyRelationship} onChangeText={(v) => updateField('emergencyRelationship', v)} error={errors.emergencyRelationship} />
+            <InputField label="電話番号" placeholder="例：090-0000-0000" required keyboardType="phone-pad" value={form.emergencyPhone} onChangeText={(v) => updateField('emergencyPhone', v)} error={errors.emergencyPhone} />
+            <InputField label="住所" placeholder="例：東京都港区六本木1-2-3 ○○マンション101" required multiline value={form.emergencyAddress} onChangeText={(v) => updateField('emergencyAddress', v)} error={errors.emergencyAddress} />
           </Section>
 
           <Section title="勤務条件・希望">
             <SelectButtons label="採用条件" options={['社員', 'アルバイト']} required selectedValue={form.hireCondition} onSelect={(v) => updateField('hireCondition', v)} error={errors.hireCondition} />
+            
             <SelectButtons label="応募方法" options={['紹介', 'WARPスタッフの紹介', '求人広告', 'その他']} required selectedValue={form.applyMethod} onSelect={(v) => updateField('applyMethod', v)} error={errors.applyMethod} />
+            {['紹介', 'WARPスタッフの紹介'].includes(form.applyMethod) && (
+                <InputField label="紹介者名" placeholder="フルネームで入力してください" required value={form.introducer} onChangeText={(v) => updateField('introducer', v)} error={errors.introducer} />
+            )}
+            {form.applyMethod === 'その他' && <InputField label="具体的な応募経由" placeholder="SNS名など" required value={form.applyMethodCustom} onChangeText={(v) => updateField('applyMethodCustom', v)} error={errors.applyMethodCustom} />}
+            
             <SelectButtons label="週何回入れますか" options={['ほぼ毎日', '週4-5', '週2-3', '週0-1']} required selectedValue={form.daysPerWeek} onSelect={(v) => updateField('daysPerWeek', v)} error={errors.daysPerWeek} />
             <MultiSelectButtons label="何曜日入れますか" options={['月', '火', '水', '木', '金', '土', '日']} required selectedValues={form.availableDays} onToggle={(v) => toggleMulti('availableDays', v)} error={errors.availableDays} />
+            
+            {form.hireCondition !== '' && (
+              <View style={styles.dynamicSection}>
+                <View style={styles.workTimeHeader}>
+                    <Text style={styles.workTimeNotice}>
+                        {form.hireCondition === '社員' ? '※社員は17時からの勤務になります' : '※アルバイトは19時からの勤務になります'}
+                    </Text>
+                </View>
+                <SelectButtons 
+                    label="勤務時間" 
+                    options={form.hireCondition === '社員' ? ['未定','17時-ラスト', 'その他'] : ['未定','19時-ラスト', 'その他']} 
+                    required 
+                    selectedValue={form.workTime} 
+                    onSelect={(v) => updateField('workTime', v)} 
+                    error={errors.workTime} 
+                />
+                {form.workTime === 'その他' && <InputField label="具体的な時間" required value={form.workTimeCustom} onChangeText={(v) => updateField('workTimeCustom', v)} error={errors.workTimeCustom} />}
+              </View>
+            )}
+          </Section>
+
+          <Section title="その他の情報 (任意回答)">
+            <SelectButtons label="借金" options={['ある', 'ない']} selectedValue={form.debt} onSelect={(v) => updateField('debt', v)} />
+            <SelectButtons label="交通手段" options={['電車', '車', 'その他']} selectedValue={form.transport} onSelect={(v) => updateField('transport', v)} />
+            {form.transport === 'その他' && <InputField label="具体的な交通手段" value={form.transportCustom} onChangeText={(v) => updateField('transportCustom', v)} />}
+            <SelectButtons label="刺青・タトゥー" options={['ある', 'ない']} selectedValue={form.tattoo} onSelect={(v) => updateField('tattoo', v)} />
+            {form.tattoo === 'ある' && <InputField label="タトゥーの部位,大きさ" value={form.tattooDetail} onChangeText={(v) => updateField('tattooDetail', v)} />}
+          </Section>
+
+          <Section title="過去の職歴">
+            {[1, 2, 3].map(n => <WorkHistoryCard key={n} symbol={n === 1 ? '①' : n === 2 ? '②' : '③'} />)}
           </Section>
 
           <View style={styles.consentCard}>
             <Text style={styles.consentText}>入力内容に間違いありませんか？</Text>
-            <Switch value={isAgreed} onValueChange={(v) => { setIsAgreed(v); setSubmitError(""); }} />
+            <Switch value={isAgreed} onValueChange={(v) => { setIsAgreed(v); setSubmitError(""); }} trackColor={{ false: "#767577", true: "#34C759" }} />
           </View>
 
           <TouchableOpacity 
@@ -321,35 +378,49 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#333' },
   scrollView: { flex: 1 },
   content: { padding: 16 },
-  section: { marginBottom: 25, backgroundColor: '#fff', borderRadius: 12, padding: 16, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 },
+  section: { marginBottom: 30, backgroundColor: '#fff', borderRadius: 12, padding: 16, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 },
   sectionTitle: { fontSize: 17, fontWeight: 'bold', color: '#007AFF', marginBottom: 16, borderLeftWidth: 4, borderLeftColor: '#007AFF', paddingLeft: 10 },
-  inputContainer: { marginBottom: 16, width: '100%' },
-  labelRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
+  inputContainer: { marginBottom: 14, flexShrink: 1 },
+  labelRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 5 },
   label: { fontSize: 13, color: '#555', fontWeight: '600' },
   requiredTag: { fontSize: 10, color: '#fff', backgroundColor: '#FF3B30', paddingHorizontal: 5, paddingVertical: 2, borderRadius: 4, marginLeft: 8, overflow: 'hidden' },
   input: { backgroundColor: '#F3F4F6', borderRadius: 8, padding: 12, fontSize: 15, color: '#333', borderWidth: 1, borderColor: '#E5E7EB' },
   inputError: { borderColor: '#FF3B30', backgroundColor: '#FFF5F5' },
   errorText: { color: '#FF3B30', fontSize: 11, marginTop: 4 },
-  textArea: { height: 80, textAlignVertical: 'top' },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' },
-  buttonRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  selectBtn: { backgroundColor: '#F3F4F6', paddingVertical: 12, borderRadius: 8, alignItems: 'center', borderWidth: 1, borderColor: '#E5E7EB', marginBottom: 8 },
+  textArea: { height: 70, textAlignVertical: 'top' },
+  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  buttonRow: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -2 },
+  selectBtn: { 
+    flexGrow: 1, 
+    minWidth: '45%', // デバイス幅に合わせて2列並びを維持
+    maxWidth: '48%', 
+    backgroundColor: '#F3F4F6', 
+    padding: 10, 
+    borderRadius: 8, 
+    alignItems: 'center', 
+    borderWidth: 1, 
+    borderColor: '#E5E7EB', 
+    margin: 2 
+  },
   selectBtnActive: { backgroundColor: '#007AFF', borderColor: '#007AFF' },
-  selectBtnText: { fontSize: 12, color: '#555', fontWeight: '600' },
+  selectBtnText: { fontSize: 11, color: '#555', fontWeight: '600' },
   selectBtnTextActive: { color: '#fff' },
   dropdownTrigger: { backgroundColor: '#F3F4F6', borderRadius: 8, padding: 12, borderWidth: 1, borderColor: '#E5E7EB', minHeight: 48, justifyContent: 'center' },
   dropdownText: { fontSize: 14, color: '#333', textAlign: 'center' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '60%' },
+  modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '50%' },
   modalHeader: { padding: 16, borderBottomWidth: 1, borderBottomColor: '#EEE', alignItems: 'center' },
   modalTitle: { fontSize: 16, fontWeight: 'bold', color: '#333' },
-  modalItem: { padding: 18, borderBottomWidth: 1, borderBottomColor: '#F9FAFB', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  modalItem: { padding: 16, borderBottomWidth: 1, borderBottomColor: '#F9FAFB', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   modalItemText: { fontSize: 16, color: '#333' },
   checkmark: { color: '#007AFF', fontWeight: 'bold' },
+  dynamicSection: { marginTop: 10, borderTopWidth: 1, borderTopColor: '#EEE', paddingTop: 15 },
+  workTimeHeader: { marginBottom: 8 },
+  workTimeNotice: { fontSize: 12, color: '#FF3B30', fontWeight: 'bold' },
   consentCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', padding: 16, borderRadius: 12, marginBottom: 20, borderWidth: 1, borderColor: '#34C759' },
   consentText: { flex: 1, fontSize: 13, color: '#333', fontWeight: '600' },
-  submitButton: { backgroundColor: '#007AFF', padding: 18, borderRadius: 12, alignItems: 'center', shadowColor: '#007AFF', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 5, elevation: 5 },
-  submitButtonDisabled: { backgroundColor: '#B0C4DE', shadowOpacity: 0 },
+  submitButton: { backgroundColor: '#007AFF', padding: 18, borderRadius: 12, alignItems: 'center' },
+  submitButtonDisabled: { backgroundColor: '#B0C4DE' },
   submitButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
   errorBanner: { marginTop: 15, padding: 12, backgroundColor: '#FFF5F5', borderRadius: 8, borderWidth: 1, borderColor: '#FF3B30', alignItems: 'center' },
   errorBannerText: { color: '#FF3B30', fontSize: 14, fontWeight: 'bold', textAlign: 'center' },
