@@ -232,7 +232,7 @@ export default function App() {
     setIsSubmitting(true);
     try {
       // ⚠️ あなたのGASのURLに書き換えてください
-      const GAS_URL = "https://script.google.com/macros/s/AKfycbxRBTgbbqV-dPHrnuqE0H25DqE743naqihVflmNo35NMbK_8uYe6byzDXQ5M-dUJghGhw/exec"; 
+      const GAS_URL = "https://script.google.com/macros/s/AKfycbzsZAA_gRjOR6GNpzhNmkvj0ibXFCemaeuEZgK92c0SIWu_U3WObyfcdQotY1fGUYL89w/exec"; 
 
       // Webブラウザの制限を回避するためのデータ形式変換
       const searchParams = new URLSearchParams();
