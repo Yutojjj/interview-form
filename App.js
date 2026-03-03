@@ -243,9 +243,9 @@ export default function App() {
         timestamp: new Date().toLocaleString('ja-JP'),
       };
 
-      const response = await fetch(GAS_URL, {
+const response = await fetch(GAS_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain' }, // ← WebのCORSエラーを回避するおまじない
         body: JSON.stringify(payload),
       });
 
