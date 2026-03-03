@@ -98,7 +98,8 @@ const DropdownSelector = ({ label, options, selectedValue, onSelect, error, requ
   );
 };
 
-const SelectButtons = ({ label, options, selectedValue, onSelect, error, required }) => (
+// --- ボタン選択コンポーネント（サイズ調整機能付き） ---
+const SelectButtons = ({ label, options, selectedValue, onSelect, error, required, customBtnStyle }) => (
   <View style={styles.inputContainer}>
     <View style={styles.labelRow}>
       <Text style={styles.label}>{label}</Text>
@@ -108,7 +109,8 @@ const SelectButtons = ({ label, options, selectedValue, onSelect, error, require
       {options.map((opt) => (
         <TouchableOpacity 
           key={opt}
-          style={[styles.selectBtn, selectedValue === opt && styles.selectBtnActive]} 
+          // customBtnStyle を適用することで、外部からサイズを変更可能にする
+          style={[styles.selectBtn, customBtnStyle, selectedValue === opt && styles.selectBtnActive]} 
           onPress={() => onSelect(opt)}
         >
           <Text style={[styles.selectBtnText, selectedValue === opt && styles.selectBtnTextActive]}>{opt}</Text>
@@ -245,9 +247,25 @@ export default function App() {
             <InputField label="かな" placeholder="例：やまだ はなこ" required value={form.kana} onChangeText={(v) => updateField('kana', v)} error={errors.kana} />
             
             <View style={styles.row}>
-              <SelectButtons label="性別" options={['男性', '女性']} required selectedValue={form.gender} onSelect={(v) => updateField('gender', v)} error={errors.gender} />
+              {/* 性別ボタンのサイズを customBtnStyle で調整 */}
+              <SelectButtons 
+                label="性別" 
+                options={['男性', '女性']} 
+                required 
+                selectedValue={form.gender} 
+                onSelect={(v) => updateField('gender', v)} 
+                error={errors.gender}
+                customBtnStyle={{ minWidth: '120%', paddingVertical: 8 }} 
+              />
               <View style={{ width: 10 }} />
-              <SelectButtons label="血液型" options={['A型', 'B型', 'O型', 'AB型']} required selectedValue={form.bloodType} onSelect={(v) => updateField('bloodType', v)} error={errors.bloodType} />
+              <SelectButtons 
+                label="血液型" 
+                options={['A型', 'B型', 'O型', 'AB型']} 
+                required 
+                selectedValue={form.bloodType} 
+                onSelect={(v) => updateField('bloodType', v)} 
+                error={errors.bloodType} 
+              />
             </View>
 
             <View style={styles.labelRow}>
@@ -392,7 +410,7 @@ const styles = StyleSheet.create({
   buttonRow: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -2 },
   selectBtn: { 
     flexGrow: 1, 
-    minWidth: '45%', // デバイス幅に合わせて2列並びを維持
+    minWidth: '45%', 
     maxWidth: '48%', 
     backgroundColor: '#F3F4F6', 
     padding: 10, 
