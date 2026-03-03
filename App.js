@@ -234,7 +234,7 @@ export default function App() {
 
     // --- 送信処理 ---
     try {
-      const GAS_URL = "https://script.google.com/macros/s/AKfycbzlxHsZV_lq7HrAm5JN3JzdNCPHjRkUFKOucIwIGAs8V4NmygfSyOJuAA09mX9B3HcDFw/exec";
+      const GAS_URL = "https://script.google.com/macros/s/AKfycbxRBTgbbqV-dPHrnuqE0H25DqE743naqihVflmNo35NMbK_8uYe6byzDXQ5M-dUJghGhw/exec";
 
       const payload = {
         ...form,
