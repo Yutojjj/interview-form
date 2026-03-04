@@ -15,6 +15,7 @@ import {
   FlatList,
   ActivityIndicator,
   Pressable,
+  ImageBackground,
 } from 'react-native';
 
 // --- フォント・共通設定 ---
@@ -64,8 +65,10 @@ const InputField = ({
   );
 };
 
+// --- スクロール問題を解決したドロップダウン ---
 const DropdownSelector = ({ label, options, selectedValue, onSelect, error, required, flex = 1 }) => {
   const [modalVisible, setModalVisible] = useState(false);
+
   return (
     <View style={[styles.inputContainer, { flex }]}>
       <View style={styles.labelRow}>
@@ -80,25 +83,36 @@ const DropdownSelector = ({ label, options, selectedValue, onSelect, error, requ
           {selectedValue || "選択 ▼"}
         </Text>
       </TouchableOpacity>
-      <Modal transparent={true} visible={modalVisible} animationType="slide">
-        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setModalVisible(false)}>
-          <View style={styles.modalContent}>
+
+      <Modal transparent={true} visible={modalVisible} animationType="fade" onRequestClose={() => setModalVisible(false)}>
+        <Pressable style={styles.modalOverlay} onPress={() => setModalVisible(false)}>
+          <Pressable style={styles.modalContent}>
             <View style={styles.modalHeader}><Text style={styles.modalTitle}>{label}を選択</Text></View>
             <FlatList
               data={options}
               keyExtractor={(item) => item.toString()}
+              initialNumToRender={10}
+              maxToRenderPerBatch={10}
+              windowSize={5}
+              getItemLayout={(data, index) => ({length: 55, offset: 55 * index, index})}
               renderItem={({ item }) => (
                 <TouchableOpacity 
-                  style={styles.modalItem} 
-                  onPress={() => { onSelect(item.toString()); setModalVisible(false); }}
+                  style={[styles.modalItem, { height: 55 }]} 
+                  onPress={() => {
+                    onSelect(item.toString());
+                    setModalVisible(false);
+                  }}
                 >
                   <Text style={styles.modalItemText}>{item}</Text>
                   {selectedValue === item.toString() && <Text style={styles.checkmark}>✓</Text>}
                 </TouchableOpacity>
               )}
             />
-          </View>
-        </TouchableOpacity>
+            <TouchableOpacity style={styles.modalCloseButton} onPress={() => setModalVisible(false)}>
+              <Text style={styles.modalCloseButtonText}>キャンセル</Text>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
       </Modal>
     </View>
   );
@@ -244,9 +258,18 @@ export default function App() {
   };
 
   return (
-<SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{flex: 1}}>
-        <View style={styles.header}><Text style={styles.headerTitle}>面接エントリーシート</Text></View>
+        
+        {/* 画像パス指定のヘッダー */}
+        <ImageBackground 
+          source={require('./assets/header-bg.png')} 
+          style={styles.header}
+          resizeMode="cover"
+        >
+          <View style={styles.headerOverlay} />
+        </ImageBackground>
+
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
           <Section title="基本情報">
             <InputField label="お名前" placeholder="例：山田 花子" required value={form.name} onChangeText={(v) => updateField('name', v)} error={errors.name} />
@@ -349,8 +372,17 @@ export default function App() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#98D96E' },
-  header: { paddingVertical: 15, alignItems: 'center' },
-  headerTitle: { ...fontSettings, fontSize: 20, fontWeight: 'bold', color: '#fff' },
+  header: { 
+    width: '100%', 
+    height: 180, 
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
+  headerOverlay: { 
+    width: '100%', 
+    height: '100%', 
+    backgroundColor: 'rgba(0,0,0,0.1)' 
+  },
   scrollView: { flex: 1 },
   content: { padding: 16 },
   section: { marginBottom: 20, backgroundColor: '#fff', borderRadius: 20, padding: 16, elevation: 4 },
@@ -372,13 +404,46 @@ const styles = StyleSheet.create({
   selectBtnTextActive: { color: '#fff' },
   dropdownTrigger: { backgroundColor: '#F1F9EE', borderRadius: 25, padding: 12, alignItems: 'center' },
   dropdownText: { ...fontSettings, fontSize: 14, color: '#333' },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 30, borderTopRightRadius: 30 },
+  modalOverlay: { 
+    flex: 1, 
+    backgroundColor: 'rgba(0,0,0,0.6)', 
+    justifyContent: 'center', 
+    alignItems: 'center',
+    padding: 20
+  },
+  modalContent: { 
+    backgroundColor: '#fff', 
+    borderRadius: 25, 
+    width: '90%', 
+    maxHeight: '70%', 
+    overflow: 'hidden',
+    elevation: 5
+  },
   modalHeader: { padding: 16, borderBottomWidth: 1, borderBottomColor: '#EEE', alignItems: 'center' },
   modalTitle: { ...fontSettings, fontSize: 16, fontWeight: 'bold' },
-  modalItem: { padding: 16, borderBottomWidth: 1, borderBottomColor: '#F9FAFB', flexDirection: 'row', justifyContent: 'space-between' },
+  modalItem: { 
+    paddingHorizontal: 20, 
+    borderBottomWidth: 1, 
+    borderBottomColor: '#F0F0F0', 
+    flexDirection: 'row', 
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
   modalItemText: { ...fontSettings, fontSize: 16 },
   checkmark: { color: '#76B148', fontWeight: 'bold' },
+  modalCloseButton: {
+    padding: 15,
+    backgroundColor: '#F8F8F8',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#EEE'
+  },
+  modalCloseButtonText: {
+    ...fontSettings,
+    color: '#666',
+    fontSize: 14,
+    fontWeight: 'bold'
+  },
   dynamicSection: { marginTop: 10, borderTopWidth: 1, borderTopColor: '#EEE', paddingTop: 15 },
   workTimeHeader: { marginBottom: 8 },
   workTimeNotice: { ...fontSettings, fontSize: 12, color: '#FF3B30', fontWeight: 'bold' },
