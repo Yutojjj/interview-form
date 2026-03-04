@@ -242,7 +242,7 @@ export default function App() {
 
     setIsSubmitting(true);
     try {
-      const GAS_URL = "https://script.google.com/macros/s/AKfycbyjbuRj_trbZ10UwYwa-faO79L_cjApq03e-iYjnDd3X0H8WTuuWyK7ygz_KG3SVkPUYw/exec"; 
+      const GAS_URL = "https://script.google.com/macros/s/AKfycbwe4yl5he09Fsb_a8WtMV0PZX36q0VxIyPZK0c1X0EMHkC6ZCr9fLrPFRjd2ZJNt9yKVQ/exec"; 
       const searchParams = new URLSearchParams();
       Object.keys(form).forEach(key => {
         if (Array.isArray(form[key])) { searchParams.append(key, form[key].join(', ')); } 
