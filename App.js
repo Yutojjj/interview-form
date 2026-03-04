@@ -242,19 +242,34 @@ export default function App() {
 
     setIsSubmitting(true);
     try {
-      // ⚠️ あなたのGASのURLに書き換えてください
-      const GAS_URL = "https://script.google.com/macros/s/AKfycbyjtMMuhznRx_hjAia2oZaTViiCfYSmvb4y2bRbHddbQbg0oyELXS9EmMGjlJLKIIBm1g/exec"; 
+      // ⚠️ あなたのGASのURL
+      const GAS_URL = "https://script.google.com/macros/s/AKfycbxeeqsgOqpOjDCntv2F8Ry2f2gzqqbQUSYsJy0zkTCQOQPS2fE6_FgLIZ0ivz6AZqmjCA/exec"; 
+      
       const searchParams = new URLSearchParams();
+      
+      // フォームの入力内容をループして追加
       Object.keys(form).forEach(key => {
-        if (Array.isArray(form[key])) { searchParams.append(key, form[key].join(', ')); } else { searchParams.append(key, form[key]); }
+        if (Array.isArray(form[key])) { 
+          // 複数選択（配列）はカンマ区切りの文字列にする
+          searchParams.append(key, form[key].join(', ')); 
+        } else { 
+          searchParams.append(key, form[key]); 
+        }
       });
       
+      // タイムスタンプと、社員用であることを示す目印を追加
       searchParams.append('timestamp', new Date().toLocaleString('ja-JP'));
-      searchParams.append('formType', 'employee'); // ★ 社員用の目印を追加
+      searchParams.append('formType', 'employee'); // ★ ここで社員用シートに振り分けます
 
-      await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: searchParams.toString() });
+      await fetch(GAS_URL, { 
+        method: 'POST', 
+        mode: 'no-cors', 
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
+        body: searchParams.toString() 
+      });
+      
       setIsSent(true);
-      Alert.alert("送信完了", "反映まで数秒お待ちください。");
+      if (window.alert) alert("送信が完了しました。");
     } catch (e) {
       setSubmitError("通信エラーが発生しました。");
     } finally {
