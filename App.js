@@ -238,7 +238,7 @@ export default function App() {
     setIsSubmitting(true);
     try {
       // ⚠️ あなたのGASのURLに書き換えてください
-      const GAS_URL = "https://script.google.com/macros/s/AKfycbwKtMkcmSvJ6OanBJ0Z5Jc1dcKAmZey-EjApCBv3rnJxVCrvFwdN7BfSwgVDqb_stZnaw/exec"; 
+      const GAS_URL = "https://script.google.com/macros/s/AKfycbw-XvwjckIsD2AiesVpEBigiXGsYTH-jl4_FLqcbrvbymyFPlGuOGeksi-UozMxjubBsw/exec"; 
 
       const searchParams = new URLSearchParams();
       Object.keys(form).forEach(key => {
