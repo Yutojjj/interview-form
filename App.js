@@ -66,6 +66,7 @@ const InputField = ({
 
 const DropdownSelector = ({ label, options, selectedValue, onSelect, error, required, flex = 1 }) => {
   const [modalVisible, setModalVisible] = useState(false);
+
   return (
     <View style={[styles.inputContainer, { flex }]}>
       <View style={styles.labelRow}>
@@ -80,15 +81,16 @@ const DropdownSelector = ({ label, options, selectedValue, onSelect, error, requ
           {selectedValue || "選択 ▼"}
         </Text>
       </TouchableOpacity>
-      
+
       <Modal 
         transparent={true} 
         visible={modalVisible} 
         animationType="slide"
-        onRequestClose={() => setModalVisible(false)} // Androidの戻るボタン対応
+        onRequestClose={() => setModalVisible(false)}
       >
+        {/* 外側をTouchableOpacityで囲まず、単なるViewにする */}
         <View style={styles.modalOverlay}>
-          {/* 背景の半透明部分をタップした時だけ閉じるための透明なPressable */}
+          {/* 背景タップ専用の透明レイヤーを背面に配置（これでスクロールを邪魔しない） */}
           <Pressable 
             style={StyleSheet.absoluteFill} 
             onPress={() => setModalVisible(false)} 
@@ -98,22 +100,27 @@ const DropdownSelector = ({ label, options, selectedValue, onSelect, error, requ
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>{label}を選択</Text>
             </View>
-            <FlatList
-              data={options}
-              keyExtractor={(item) => item.toString()}
-              renderItem={({ item }) => (
+            
+            {/* FlatListの代わりに安定したScrollView+map（以前の安定版に近い挙動） */}
+            <ScrollView style={{ maxHeight: 400 }}>
+              {options.map((item) => (
                 <TouchableOpacity 
+                  key={item.toString()}
                   style={styles.modalItem} 
-                  onPress={() => { onSelect(item.toString()); setModalVisible(false); }}
+                  onPress={() => {
+                    onSelect(item.toString());
+                    setModalVisible(false);
+                  }}
                 >
                   <Text style={styles.modalItemText}>{item}</Text>
                   {selectedValue === item.toString() && <Text style={styles.checkmark}>✓</Text>}
                 </TouchableOpacity>
-              )}
-            />
+              ))}
+            </ScrollView>
           </View>
         </View>
       </Modal>
+      {error && <Text style={styles.errorText}>未選択</Text>}
     </View>
   );
 };
