@@ -12,15 +12,19 @@ import {
   SafeAreaView,
   Alert,
   Modal,
-  FlatList,
   ActivityIndicator,
   Pressable,
 } from 'react-native';
 
-// --- フォント・共通設定 ---
-const fontSettings = {
-  fontFamily: Platform.OS === 'ios' ? 'Hiragino Sans Round' : 'sans-serif-medium',
-  letterSpacing: 0.5,
+// --- 共通設定 ---
+const COLORS = {
+  primary: '#76B148',      // 優しい緑
+  primaryLight: '#F1F9EE', // 選択時の薄い緑
+  error: '#EF5350',        // 優しい赤
+  border: '#E5E7EB',
+  bg: '#F8F9FA',
+  text: '#333',
+  subText: '#555',
 };
 
 // --- 共通コンポーネント ---
@@ -34,35 +38,25 @@ const Section = ({ title, children }) => (
 const InputField = ({ 
   label, placeholder, multiline = false, flex = 1, keyboardType = 'default',
   value, onChangeText, error = false, required = false
-}) => {
-  const [isFocused, setIsFocused] = useState(false);
-  return (
-    <View style={[styles.inputContainer, { flex }]}>
-      <View style={styles.labelRow}>
-        <Text style={styles.label}>{label}</Text>
-        {required && <Text style={styles.requiredTag}>必須</Text>}
-      </View>
-      <TextInput
-        style={[
-          styles.input, 
-          multiline && styles.textArea, 
-          error && styles.inputError,
-          isFocused && { borderBottomColor: '#76B148', borderBottomWidth: 2 }
-        ]}
-        placeholder={placeholder}
-        placeholderTextColor="#bbb"
-        multiline={multiline}
-        keyboardType={keyboardType}
-        value={value}
-        onChangeText={onChangeText}
-        selectionColor="#76B148"
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-      />
-      {error && <Text style={styles.errorText}>この項目は入力必須です</Text>}
+}) => (
+  <View style={[styles.inputContainer, { flex }]}>
+    <View style={styles.labelRow}>
+      <Text style={styles.label}>{label}</Text>
+      {required && <Text style={styles.requiredTag}>必須</Text>}
     </View>
-  );
-};
+    <TextInput
+      style={[styles.input, multiline && styles.textArea, error && styles.inputError]}
+      placeholder={placeholder}
+      placeholderTextColor="#bbb"
+      multiline={multiline}
+      keyboardType={keyboardType}
+      value={value}
+      onChangeText={onChangeText}
+      selectionColor={COLORS.primary}
+    />
+    {error && <Text style={styles.errorText}>この項目は入力必須です</Text>}
+  </View>
+);
 
 const DropdownSelector = ({ label, options, selectedValue, onSelect, error, required, flex = 1 }) => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -88,34 +82,32 @@ const DropdownSelector = ({ label, options, selectedValue, onSelect, error, requ
         animationType="slide"
         onRequestClose={() => setModalVisible(false)}
       >
-        {/* 外側をTouchableOpacityで囲まず、単なるViewにする */}
         <View style={styles.modalOverlay}>
-          {/* 背景タップ専用の透明レイヤーを背面に配置（これでスクロールを邪魔しない） */}
-          <Pressable 
-            style={StyleSheet.absoluteFill} 
-            onPress={() => setModalVisible(false)} 
-          />
-          
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => setModalVisible(false)} />
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>{label}を選択</Text>
             </View>
-            
-            {/* FlatListの代わりに安定したScrollView+map（以前の安定版に近い挙動） */}
+            {/* ScrollView + map で強制スクロールバグを回避 */}
             <ScrollView style={{ maxHeight: 400 }}>
-              {options.map((item) => (
-                <TouchableOpacity 
-                  key={item.toString()}
-                  style={styles.modalItem} 
-                  onPress={() => {
-                    onSelect(item.toString());
-                    setModalVisible(false);
-                  }}
-                >
-                  <Text style={styles.modalItemText}>{item}</Text>
-                  {selectedValue === item.toString() && <Text style={styles.checkmark}>✓</Text>}
-                </TouchableOpacity>
-              ))}
+              {options.map((item) => {
+                const isSelected = selectedValue === item.toString();
+                return (
+                  <TouchableOpacity 
+                    key={item.toString()}
+                    style={[styles.modalItem, isSelected && { backgroundColor: COLORS.primaryLight }]} 
+                    onPress={() => {
+                      onSelect(item.toString());
+                      setModalVisible(false);
+                    }}
+                  >
+                    <Text style={[styles.modalItemText, isSelected && { color: COLORS.primary, fontWeight: 'bold' }]}>
+                      {item}
+                    </Text>
+                    {isSelected && <Text style={styles.checkmark}>✓</Text>}
+                  </TouchableOpacity>
+                );
+              })}
             </ScrollView>
           </View>
         </View>
@@ -133,19 +125,16 @@ const SelectButtons = ({ label, options, selectedValue, onSelect, error, require
     </View>
     <View style={[styles.buttonRow, error && styles.inputError, { borderWidth: error ? 1 : 0, borderRadius: 8 }]}>
       {options.map((opt) => (
-        <Pressable 
+        <TouchableOpacity 
           key={opt}
-          style={({ pressed }) => [
-            styles.selectBtn, customBtnStyle, 
-            selectedValue === opt && styles.selectBtnActive,
-            pressed && styles.selectBtnPressed
-          ]} 
+          style={[styles.selectBtn, customBtnStyle, selectedValue === opt && styles.selectBtnActive]} 
           onPress={() => onSelect(opt)}
         >
           <Text style={[styles.selectBtnText, selectedValue === opt && styles.selectBtnTextActive]}>{opt}</Text>
-        </Pressable>
+        </TouchableOpacity>
       ))}
     </View>
+    {error && <Text style={styles.errorText}>選択してください</Text>}
   </View>
 );
 
@@ -159,17 +148,13 @@ const MultiSelectButtons = ({ label, options, selectedValues, onToggle, error, r
       {options.map((opt) => {
         const isActive = selectedValues.includes(opt);
         return (
-          <Pressable 
+          <TouchableOpacity 
             key={opt}
-            style={({ pressed }) => [
-              styles.selectBtn, 
-              isActive && styles.selectBtnActive,
-              pressed && styles.selectBtnPressed
-            ]} 
+            style={[styles.selectBtn, isActive && styles.selectBtnActive]} 
             onPress={() => onToggle(opt)}
           >
             <Text style={[styles.selectBtnText, isActive && styles.selectBtnTextActive]}>{opt}</Text>
-          </Pressable>
+          </TouchableOpacity>
         );
       })}
     </View>
@@ -194,14 +179,17 @@ export default function App() {
   const [isAgreed, setIsAgreed] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSent, setIsSent] = useState(false);
 
   const [form, setForm] = useState({
     name: '', kana: '', gender: '', bloodType: '',
-    birthYear: '', birthMonth: '', birthDay: '', age: '', zodiac: '', phone: '', address: '', domicile: '', height: '', weight: '',
-    jobDay: '', jobNight: '', education: '', nightJobExp: '', livingStatus: '', livingStatusCustom: '', 
-    language: [], languageCustom: '', emergencyName: '', emergencyRelationship: '', emergencyPhone: '', emergencyAddress: '',
-    hireCondition: '', applyMethod: '', applyMethodCustom: '', introducer: '', daysPerWeek: '', availableDays: [], workTime: '', workTimeCustom: '',
+    birthYear: '', birthMonth: '', birthDay: '', age: '', zodiac: '', 
+    phone: '', address: '', domicile: '', height: '', weight: '',
+    jobDay: '', jobNight: '', education: '', nightJobExp: '', 
+    livingStatus: '', livingStatusCustom: '', 
+    language: [], languageCustom: '', 
+    emergencyName: '', emergencyRelationship: '', emergencyPhone: '', emergencyAddress: '',
+    hireCondition: '', applyMethod: '', applyMethodCustom: '', introducer: '', 
+    daysPerWeek: '', availableDays: [], workTime: '', workTimeCustom: '',
     debt: '', transport: '', transportCustom: '', tattoo: '', tattooDetail: '',
     workHistory1Name: '', workHistory1Wage: '', workHistory1Period: '', workHistory1QuitDate: '', workHistory1QuitReason: '',
     workHistory2Name: '', workHistory2Wage: '', workHistory2Period: '', workHistory2QuitDate: '', workHistory2QuitReason: '',
@@ -220,22 +208,33 @@ export default function App() {
     if (key === 'hireCondition') { newForm.workTime = ''; newForm.workTimeCustom = ''; }
     if (key === 'applyMethod' && !['紹介', 'WARPスタッフの紹介'].includes(value)) { newForm.introducer = ''; }
     setForm(newForm);
-    setIsSent(false);
-    if (value && value.toString().trim() !== '') { setErrors(prev => ({ ...prev, [key]: false })); }
+    if (value && value.toString().trim() !== '') {
+      setErrors(prev => ({ ...prev, [key]: false }));
+    }
     setSubmitError("");
   };
 
   const toggleMulti = (key, val) => {
     let list = [...form[key]];
-    if (list.includes(val)) { list = list.filter(v => v !== val); } else { list.push(val); }
+    if (list.includes(val)) { list = list.filter(v => v !== val); } 
+    else { list.push(val); }
     updateField(key, list);
   };
 
   const handleViewSubmit = async () => {
-    setSubmitError(""); setIsSent(false);
+    setSubmitError("");
     let newErrors = {};
-    const requiredList = ['name', 'kana', 'gender', 'bloodType', 'birthYear', 'birthMonth', 'birthDay', 'age', 'zodiac', 'phone', 'address', 'jobDay', 'jobNight', 'education', 'nightJobExp', 'hireCondition', 'applyMethod', 'daysPerWeek', 'workTime'];
-    requiredList.forEach(key => { if (!form[key] || form[key].toString().trim() === '') newErrors[key] = true; });
+    const requiredList = [
+      'name', 'kana', 'gender', 'bloodType', 'birthYear', 'birthMonth', 'birthDay', 'age', 'zodiac', 
+      'phone', 'address', 'domicile', 'jobDay', 'jobNight', 'education', 'nightJobExp', 'livingStatus', 
+      'emergencyName', 'emergencyRelationship', 'emergencyPhone', 'emergencyAddress',
+      'hireCondition', 'applyMethod', 'daysPerWeek', 'workTime'
+    ];
+
+    requiredList.forEach(key => {
+      if (!form[key] || form[key].toString().trim() === '') newErrors[key] = true;
+    });
+
     if (form.language.length === 0) newErrors.language = true;
     if (form.availableDays.length === 0) newErrors.availableDays = true;
 
@@ -251,12 +250,19 @@ export default function App() {
       const GAS_URL = "https://script.google.com/macros/s/AKfycbw-XvwjckIsD2AiesVpEBigiXGsYTH-jl4_FLqcbrvbymyFPlGuOGeksi-UozMxjubBsw/exec"; 
       const searchParams = new URLSearchParams();
       Object.keys(form).forEach(key => {
-        if (Array.isArray(form[key])) { searchParams.append(key, form[key].join(', ')); } else { searchParams.append(key, form[key]); }
+        if (Array.isArray(form[key])) { searchParams.append(key, form[key].join(', ')); } 
+        else { searchParams.append(key, form[key]); }
       });
       searchParams.append('timestamp', new Date().toLocaleString('ja-JP'));
-      await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: searchParams.toString() });
-      setIsSent(true);
-      Alert.alert("送信完了", "反映まで数秒お待ちください。");
+
+      await fetch(GAS_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: searchParams.toString(),
+      });
+
+      Alert.alert("送信完了", "スプレッドシートへの保存処理を開始しました。\n反映まで数秒お待ちください。");
     } catch (e) {
       setSubmitError("通信エラーが発生しました。");
     } finally {
@@ -269,25 +275,30 @@ export default function App() {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{flex: 1}}>
         <View style={styles.header}><Text style={styles.headerTitle}>面接エントリーシート</Text></View>
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
+
           <Section title="基本情報">
             <InputField label="お名前" placeholder="例：山田 花子" required value={form.name} onChangeText={(v) => updateField('name', v)} error={errors.name} />
             <InputField label="かな" placeholder="例：やまだ はなこ" required value={form.kana} onChangeText={(v) => updateField('kana', v)} error={errors.kana} />
+            
             <View style={styles.row}>
               <SelectButtons label="性別" options={['男性', '女性']} required selectedValue={form.gender} onSelect={(v) => updateField('gender', v)} error={errors.gender} customBtnStyle={{ minWidth: '40%', paddingVertical: 8 }} />
               <View style={{ width: 10 }} />
               <SelectButtons label="血液型" options={['A型', 'B型', 'O型', 'AB型']} required selectedValue={form.bloodType} onSelect={(v) => updateField('bloodType', v)} error={errors.bloodType} />
             </View>
+
             <View style={styles.labelRow}><Text style={styles.label}>生年月日</Text><Text style={styles.requiredTag}>必須</Text></View>
             <View style={styles.row}>
               <DropdownSelector flex={3} options={years} selectedValue={form.birthYear} onSelect={(v) => updateField('birthYear', v)} error={errors.birthYear} label="年" />
               <View style={{ width: 5 }} /><DropdownSelector flex={2} options={months} selectedValue={form.birthMonth} onSelect={(v) => updateField('birthMonth', v)} error={errors.birthMonth} label="月" />
               <View style={{ width: 5 }} /><DropdownSelector flex={2} options={days} selectedValue={form.birthDay} onSelect={(v) => updateField('birthDay', v)} error={errors.birthDay} label="日" />
             </View>
+            
             <View style={styles.row}>
               <InputField label="年齢" placeholder="例：25" required keyboardType="numeric" value={form.age} onChangeText={(v) => updateField('age', v)} error={errors.age} flex={1} />
               <View style={{ width: 10 }} />
               <DropdownSelector label="干支" options={zodiacOptions} required selectedValue={form.zodiac} onSelect={(v) => updateField('zodiac', v)} error={errors.zodiac} flex={1.5} />
             </View>
+
             <InputField label="携帯番号" placeholder="09012345678" keyboardType="phone-pad" required value={form.phone} onChangeText={(v) => updateField('phone', v)} error={errors.phone} />
             <InputField label="現住所" placeholder="マンション名まで正確に" multiline required value={form.address} onChangeText={(v) => updateField('address', v)} error={errors.address} />
             <InputField label="本籍地" placeholder="都道府県名から" required value={form.domicile} onChangeText={(v) => updateField('domicile', v)} error={errors.domicile} />
@@ -345,22 +356,17 @@ export default function App() {
             <WorkHistoryCard symbol="③" prefix="workHistory3" data={form} updateField={updateField} />
           </Section>
 
-          <View style={styles.consentCardContainer}>
-            <View style={styles.consentCard}>
-              <Text style={styles.consentText}>入力内容に間違いありませんか？</Text>
-              <Switch value={isAgreed} onValueChange={(v) => setIsAgreed(v)} trackColor={{ false: "#767577", true: "#2E8B57" }} />
-            </View>
-          </View>
+          <View style={styles.consentCard}><Text style={styles.consentText}>入力内容に間違いありませんか？</Text><Switch value={isAgreed} onValueChange={(v) => { setIsAgreed(v); setSubmitError(""); }} trackColor={{ false: "#767577", true: "#34C759" }} /></View>
           
-          <Pressable 
-            onPress={handleViewSubmit} disabled={!isAgreed || isSubmitting}
-            style={({ pressed }) => [styles.submitButton, (!isAgreed || isSubmitting) && styles.submitButtonDisabled, pressed && { backgroundColor: '#007B50' }]}
+          <TouchableOpacity 
+            style={[styles.submitButton, (!isAgreed || isSubmitting) && styles.submitButtonDisabled]} 
+            onPress={handleViewSubmit}
+            disabled={!isAgreed || isSubmitting}
           >
             {isSubmitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.submitButtonText}>内容を確認して送信</Text>}
-          </Pressable>
+          </TouchableOpacity>
 
-          {submitError !== "" && <View style={styles.msgBanner}><Text style={styles.errorTextOnly}>{submitError}</Text></View>}
-          {isSent && <View style={styles.msgBanner}><Text style={styles.sentTextOnly}>送信されました。ありがとうございます！</Text></View>}
+          {submitError !== "" && <View style={styles.errorBanner}><Text style={styles.errorBannerText}>⚠️ {submitError}</Text></View>}
           <View style={{ height: 60 }} />
         </ScrollView>
       </KeyboardAvoidingView>
@@ -369,49 +375,46 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#98D96E' },
-  header: { paddingVertical: 15, alignItems: 'center' },
-  headerTitle: { ...fontSettings, fontSize: 20, fontWeight: 'bold', color: '#fff' },
+  safeArea: { flex: 1, backgroundColor: COLORS.bg },
+  header: { paddingVertical: 20, backgroundColor: '#fff', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#EEE' },
+  headerTitle: { fontSize: 18, fontWeight: 'bold', color: COLORS.text },
   scrollView: { flex: 1 },
   content: { padding: 16 },
-  section: { marginBottom: 20, backgroundColor: '#fff', borderRadius: 20, padding: 16, elevation: 4 },
-  sectionTitle: { ...fontSettings, fontSize: 17, fontWeight: 'bold', color: '#76B148', marginBottom: 16, textAlign: 'center' },
+  section: { marginBottom: 30, backgroundColor: '#fff', borderRadius: 12, padding: 16, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 },
+  sectionTitle: { fontSize: 17, fontWeight: 'bold', color: COLORS.primary, marginBottom: 16, borderLeftWidth: 4, borderLeftColor: COLORS.primary, paddingLeft: 10 },
   inputContainer: { marginBottom: 14 },
   labelRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 5 },
-  label: { ...fontSettings, fontSize: 13, color: '#333', fontWeight: 'bold' },
-  requiredTag: { ...fontSettings, fontSize: 10, color: '#fff', backgroundColor: '#FF3B30', paddingHorizontal: 5, paddingVertical: 2, borderRadius: 4, marginLeft: 8 },
-  input: { ...fontSettings, backgroundColor: '#F8FBF8', borderRadius: 12, padding: 12, fontSize: 15, color: '#333', borderBottomWidth: 1, borderBottomColor: '#76B148' },
-  inputError: { borderColor: '#FF3B30' },
-  errorText: { ...fontSettings, color: '#FF3B30', fontSize: 11, marginTop: 4 },
+  label: { fontSize: 13, color: COLORS.subText, fontWeight: '600' },
+  requiredTag: { fontSize: 10, color: '#fff', backgroundColor: COLORS.error, paddingHorizontal: 5, paddingVertical: 2, borderRadius: 4, marginLeft: 8, overflow: 'hidden' },
+  input: { backgroundColor: '#F3F4F6', borderRadius: 8, padding: 12, fontSize: 15, color: COLORS.text, borderWidth: 1, borderColor: COLORS.border },
+  inputError: { borderColor: COLORS.error, backgroundColor: '#FFF5F5' },
+  errorText: { color: COLORS.error, fontSize: 11, marginTop: 4 },
   textArea: { height: 70, textAlignVertical: 'top' },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  buttonRow: { flexDirection: 'row', flexWrap: 'wrap' },
-  selectBtn: { flexGrow: 1, minWidth: '45%', backgroundColor: '#F1F9EE', padding: 12, borderRadius: 25, alignItems: 'center', margin: 4 },
-  selectBtnActive: { backgroundColor: '#76B148' },
-  selectBtnPressed: { backgroundColor: '#F2F2F2' },
-  selectBtnText: { ...fontSettings, fontSize: 12, color: '#76B148', fontWeight: 'bold' },
+  buttonRow: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -2 },
+  selectBtn: { flexGrow: 1, minWidth: '45%', maxWidth: '48%', backgroundColor: '#F3F4F6', padding: 10, borderRadius: 8, alignItems: 'center', borderWidth: 1, borderColor: COLORS.border, margin: 2 },
+  selectBtnActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
+  selectBtnText: { fontSize: 11, color: COLORS.subText, fontWeight: '600' },
   selectBtnTextActive: { color: '#fff' },
-  dropdownTrigger: { backgroundColor: '#F1F9EE', borderRadius: 25, padding: 12, alignItems: 'center' },
-  dropdownText: { ...fontSettings, fontSize: 14, color: '#333' },
+  dropdownTrigger: { backgroundColor: '#F3F4F6', borderRadius: 8, padding: 12, borderWidth: 1, borderColor: COLORS.border, minHeight: 48, justifyContent: 'center' },
+  dropdownText: { fontSize: 14, color: COLORS.text, textAlign: 'center' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 30, borderTopRightRadius: 30 },
+  modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '50%' },
   modalHeader: { padding: 16, borderBottomWidth: 1, borderBottomColor: '#EEE', alignItems: 'center' },
-  modalTitle: { ...fontSettings, fontSize: 16, fontWeight: 'bold' },
-  modalItem: { padding: 16, borderBottomWidth: 1, borderBottomColor: '#F9FAFB', flexDirection: 'row', justifyContent: 'space-between' },
-  modalItemText: { ...fontSettings, fontSize: 16 },
-  checkmark: { color: '#76B148', fontWeight: 'bold' },
+  modalTitle: { fontSize: 16, fontWeight: 'bold', color: COLORS.text },
+  modalItem: { padding: 18, borderBottomWidth: 1, borderBottomColor: '#F9FAFB', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  modalItemText: { fontSize: 16, color: COLORS.text },
+  checkmark: { color: COLORS.primary, fontWeight: 'bold', fontSize: 18 },
   dynamicSection: { marginTop: 10, borderTopWidth: 1, borderTopColor: '#EEE', paddingTop: 15 },
   workTimeHeader: { marginBottom: 8 },
-  workTimeNotice: { ...fontSettings, fontSize: 12, color: '#FF3B30', fontWeight: 'bold' },
-  consentCardContainer: { backgroundColor: '#fff', borderRadius: 20, padding: 8, marginBottom: 20, elevation: 4 },
-  consentCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F1F9EE', padding: 16, borderRadius: 15 },
-  consentText: { ...fontSettings, flex: 1, fontSize: 13, color: '#333', fontWeight: 'bold' },
-  submitButton: { backgroundColor: '#76B148', padding: 18, borderRadius: 30, alignItems: 'center', elevation: 2 },
-  submitButtonDisabled: { backgroundColor: '#CCC' },
-  submitButtonText: { ...fontSettings, color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  workTimeNotice: { fontSize: 12, color: COLORS.error, fontWeight: 'bold' },
+  consentCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', padding: 16, borderRadius: 12, marginBottom: 20, borderWidth: 1, borderColor: '#34C759' },
+  consentText: { flex: 1, fontSize: 13, color: COLORS.text, fontWeight: '600' },
+  submitButton: { backgroundColor: COLORS.primary, padding: 18, borderRadius: 12, alignItems: 'center' },
+  submitButtonDisabled: { backgroundColor: '#B0C4DE' },
+  submitButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  errorBanner: { marginTop: 15, padding: 12, backgroundColor: '#FFF5F5', borderRadius: 8, borderWidth: 1, borderColor: COLORS.error, alignItems: 'center' },
+  errorBannerText: { color: COLORS.error, fontSize: 14, fontWeight: 'bold', textAlign: 'center' },
   historyCard: { backgroundColor: '#F9FAFB', borderRadius: 10, padding: 12, marginBottom: 15, borderWidth: 1, borderColor: '#ECEEF1' },
-  historyLabel: { ...fontSettings, fontSize: 16, fontWeight: 'bold', color: '#2E8B57', marginBottom: 10 },
-  msgBanner: { marginTop: 15, alignItems: 'center' },
-  errorTextOnly: { ...fontSettings, color: '#FF3B30', fontSize: 14, fontWeight: 'bold', textAlign: 'center' },
-  sentTextOnly: { ...fontSettings, color: '#FF3B30', fontSize: 16, fontWeight: 'bold', textAlign: 'center' },
+  historyLabel: { fontSize: 14, fontWeight: 'bold', color: '#444', marginBottom: 10 },
 });
