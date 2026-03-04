@@ -243,7 +243,7 @@ export default function App() {
     setIsSubmitting(true);
     try {
       // ⚠️ あなたのGASのURLに書き換えてください
-      const GAS_URL = "https://script.google.com/macros/s/AKfycbzLk3gLAd9UOAGzpqGn_5QQCSOfy7McpkQ5Li8yCVhDizNT2l4GEoL9NcHkeScVhvkD5g/exec"; 
+      const GAS_URL = "https://script.google.com/macros/s/AKfycbyjtMMuhznRx_hjAia2oZaTViiCfYSmvb4y2bRbHddbQbg0oyELXS9EmMGjlJLKIIBm1g/exec"; 
       const searchParams = new URLSearchParams();
       Object.keys(form).forEach(key => {
         if (Array.isArray(form[key])) { searchParams.append(key, form[key].join(', ')); } else { searchParams.append(key, form[key]); }
