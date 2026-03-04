@@ -243,7 +243,7 @@ export default function App() {
     setIsSubmitting(true);
     try {
       // ⚠️ あなたのGASのURL
-      const GAS_URL = "https://script.google.com/macros/s/AKfycbxeeqsgOqpOjDCntv2F8Ry2f2gzqqbQUSYsJy0zkTCQOQPS2fE6_FgLIZ0ivz6AZqmjCA/exec"; 
+      const GAS_URL = "https://script.google.com/macros/s/AKfycbzHlt307bv8R9xfEOZTdeNhZNwtmD9d-bC3a7Ja7M1-4_EScQSTF9TlV35DHDez1NeJ6A/exec"; 
       
       const searchParams = new URLSearchParams();
       
