@@ -246,8 +246,10 @@ export default function App() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{flex: 1}}>
-        <View style={styles.header}><Text style={styles.headerTitle}>面接エントリーシート</Text></View>
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
+        <ImageBackground 
+          source={require('./assets/header-bg.png')} 
+          style={styles.header}
+          resizeMode="cover"
           <Section title="基本情報">
             <InputField label="お名前" placeholder="例：山田 花子" required value={form.name} onChangeText={(v) => updateField('name', v)} error={errors.name} />
             <InputField label="かな" placeholder="例：やまだ はなこ" required value={form.kana} onChangeText={(v) => updateField('kana', v)} error={errors.kana} />
