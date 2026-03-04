@@ -80,10 +80,24 @@ const DropdownSelector = ({ label, options, selectedValue, onSelect, error, requ
           {selectedValue || "選択 ▼"}
         </Text>
       </TouchableOpacity>
-      <Modal transparent={true} visible={modalVisible} animationType="slide">
-        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setModalVisible(false)}>
+      
+      <Modal 
+        transparent={true} 
+        visible={modalVisible} 
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)} // Androidの戻るボタン対応
+      >
+        <View style={styles.modalOverlay}>
+          {/* 背景の半透明部分をタップした時だけ閉じるための透明なPressable */}
+          <Pressable 
+            style={StyleSheet.absoluteFill} 
+            onPress={() => setModalVisible(false)} 
+          />
+          
           <View style={styles.modalContent}>
-            <View style={styles.modalHeader}><Text style={styles.modalTitle}>{label}を選択</Text></View>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{label}を選択</Text>
+            </View>
             <FlatList
               data={options}
               keyExtractor={(item) => item.toString()}
@@ -98,7 +112,7 @@ const DropdownSelector = ({ label, options, selectedValue, onSelect, error, requ
               )}
             />
           </View>
-        </TouchableOpacity>
+        </View>
       </Modal>
     </View>
   );
