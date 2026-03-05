@@ -334,7 +334,7 @@ export default function App() {
 
             <Section title="基本情報" description="正確にご記入ください。">
               <InputField label="お名前" placeholder="例：山田 花子" required value={form.name} onChangeText={(v) => updateField('name', v)} error={errors.name} />
-              <InputField label="かな" placeholder="例：やまず はなこ" required value={form.kana} onChangeText={(v) => updateField('kana', v)} error={errors.kana} />
+              <InputField label="かな" placeholder="例：やまだ はなこ" required value={form.kana} onChangeText={(v) => updateField('kana', v)} error={errors.kana} />
               
               <SelectButtons label="性別" options={['男性', '女性']} required selectedValue={form.gender} onSelect={(v) => updateField('gender', v)} error={errors.gender} />
               <SelectButtons label="血液型" options={['A型', 'B型', 'O型', 'AB型']} required selectedValue={form.bloodType} onSelect={(v) => updateField('bloodType', v)} error={errors.bloodType} />
