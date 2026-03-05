@@ -13,7 +13,8 @@ import {
   Modal,
   ActivityIndicator,
   Pressable,
-  Image, // 画像表示のために追加
+  Image,
+  Linking, // 閉じる（外部へ飛ばす）ために追加
 } from 'react-native';
 
 // --- フォント・共通設定 ---
@@ -255,6 +256,12 @@ export default function App() {
     updateField(key, list);
   };
 
+  const handleClose = () => {
+    // 外部サイトに飛ばす、または画面をリセットする
+    // 例：店舗のLINE公式アカウントやHPへ
+    Linking.openURL('https://www.google.com'); 
+  };
+
   const handleViewSubmit = async () => {
     setSubmitError(""); setIsSent(false);
     let newErrors = {};
@@ -294,7 +301,6 @@ export default function App() {
         body: searchParams.toString() 
       });
       setIsSent(true);
-      if (typeof alert !== 'undefined') alert("送信が完了しました。");
     } catch (e) {
       setSubmitError("通信エラーが発生しました。");
     } finally {
@@ -305,6 +311,7 @@ export default function App() {
   return (
     <SafeAreaView style={styles.safeArea}>
       {isSent ? (
+        // --- 送信成功後の完了ページ ---
         <View style={styles.successPage}>
           <Image 
             source={require('./assets/LOGO.png')} 
@@ -314,14 +321,27 @@ export default function App() {
           <Text style={styles.successTitle}>送信が完了しました</Text>
           <Text style={styles.successMessage}>
             面接フォームのご記入ありがとうございます。{"\n"}
-            テーブルの上の呼び出しボタンを押し、担当者が来るまでお待ちください
+            テーブル上の呼び出しボタンを押して面接担当者をお待ちください
           </Text>
-          <TouchableOpacity 
-            style={styles.backButton} 
-            onPress={() => setIsSent(false)} 
-          >
-            <Text style={styles.backButtonText}>フォームに戻る</Text>
-          </TouchableOpacity>
+          
+          {/* ボタンエリア */}
+          <View style={styles.successButtonRow}>
+            <TouchableOpacity 
+              style={[styles.backButton, { backgroundColor: '#888' }]} 
+              onPress={() => setIsSent(false)} 
+            >
+              <Text style={styles.backButtonText}>入力し直す</Text>
+            </TouchableOpacity>
+            
+            <View style={{ width: 15 }} />
+
+            <TouchableOpacity 
+              style={styles.backButton} 
+              onPress={handleClose} 
+            >
+              <Text style={styles.backButtonText}>画面を閉じる</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       ) : (
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{flex: 1}}>
@@ -334,7 +354,7 @@ export default function App() {
 
             <Section title="基本情報" description="正確にご記入ください。">
               <InputField label="お名前" placeholder="例：山田 花子" required value={form.name} onChangeText={(v) => updateField('name', v)} error={errors.name} />
-              <InputField label="かな" placeholder="例：やまだ はなこ" required value={form.kana} onChangeText={(v) => updateField('kana', v)} error={errors.kana} />
+              <InputField label="かな" placeholder="例：やまず はなこ" required value={form.kana} onChangeText={(v) => updateField('kana', v)} error={errors.kana} />
               
               <SelectButtons label="性別" options={['男性', '女性']} required selectedValue={form.gender} onSelect={(v) => updateField('gender', v)} error={errors.gender} />
               <SelectButtons label="血液型" options={['A型', 'B型', 'O型', 'AB型']} required selectedValue={form.bloodType} onSelect={(v) => updateField('bloodType', v)} error={errors.bloodType} />
@@ -540,11 +560,13 @@ const styles = StyleSheet.create({
   historyLabel: { ...fontSettings, fontSize: 14, fontWeight: 'bold', color: '#2E8B57', marginBottom: 10 },
   msgBanner: { marginTop: 15, alignItems: 'center' },
   errorTextOnly: { ...fontSettings, color: '#EF5350', fontSize: 14, fontWeight: 'bold', textAlign: 'center' },
-  // --- 完了ページのスタイル ---
+  
+  // --- 送信完了画面のスタイル ---
   successPage: { flex: 1, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center', padding: 20 },
-  successLogo: { width: 500, height: 500, marginBottom: 20 },
+  successLogo: { width: 180, height: 180, marginBottom: 20 },
   successTitle: { ...fontSettings, fontSize: 22, fontWeight: 'bold', color: '#76B148', marginBottom: 10 },
   successMessage: { ...fontSettings, fontSize: 14, color: '#666', textAlign: 'center', lineHeight: 22, marginBottom: 30 },
-  backButton: { backgroundColor: '#76B148', paddingVertical: 12, paddingHorizontal: 30, borderRadius: 25 },
-  backButtonText: { ...fontSettings, color: '#fff', fontWeight: 'bold' },
+  successButtonRow: { flexDirection: 'row', justifyContent: 'center', width: '100%' },
+  backButton: { backgroundColor: '#76B148', paddingVertical: 12, paddingHorizontal: 20, borderRadius: 25, flex: 1, alignItems: 'center' },
+  backButtonText: { ...fontSettings, color: '#fff', fontWeight: 'bold', fontSize: 14 },
 });
