@@ -259,7 +259,7 @@ export default function App() {
   const handleClose = () => {
     // 外部サイトに飛ばす、または画面をリセットする
     // 例：店舗のLINE公式アカウントやHPへ
-    Linking.openURL('https://www.google.com'); 
+    Linking.openURL('https://warp-net.jp/'); 
   };
 
   const handleViewSubmit = async () => {
@@ -339,7 +339,7 @@ export default function App() {
               style={styles.backButton} 
               onPress={handleClose} 
             >
-              <Text style={styles.backButtonText}>画面を閉じる</Text>
+              <Text style={styles.backButtonText}>閉じる</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -347,14 +347,14 @@ export default function App() {
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{flex: 1}}>
           <View style={styles.header}>
             <Text style={styles.headerTitle}>【アルバイト/社員用面接フォーム】</Text>
-            <Text style={{ ...fontSettings, color: '#FAFAD2', fontSize: 14 }}>目安:回答時間3~5分程度</Text>
+            <Text style={{ ...fontSettings, color: '#FAFAD2', fontSize: 14 }}>目安:回答時間5分程度</Text>
           </View>
           
           <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
 
-            <Section title="基本情報" description="正確にご記入ください。">
+            <Section title="基本情報">
               <InputField label="お名前" placeholder="例：山田 花子" required value={form.name} onChangeText={(v) => updateField('name', v)} error={errors.name} />
-              <InputField label="かな" placeholder="例：やまず はなこ" required value={form.kana} onChangeText={(v) => updateField('kana', v)} error={errors.kana} />
+              <InputField label="かな" placeholder="例：やまだ はなこ" required value={form.kana} onChangeText={(v) => updateField('kana', v)} error={errors.kana} />
               
               <SelectButtons label="性別" options={['男性', '女性']} required selectedValue={form.gender} onSelect={(v) => updateField('gender', v)} error={errors.gender} />
               <SelectButtons label="血液型" options={['A型', 'B型', 'O型', 'AB型']} required selectedValue={form.bloodType} onSelect={(v) => updateField('bloodType', v)} error={errors.bloodType} />
@@ -371,7 +371,7 @@ export default function App() {
                 <DropdownSelector label="干支(えと)" options={zodiacOptions} required selectedValue={form.zodiac} onSelect={(v) => updateField('zodiac', v)} error={errors.zodiac} flex={1.5} />
               </View>
               <InputField label="携帯番号" placeholder="例：09012345678" keyboardType="phone-pad" required value={form.phone} onChangeText={(v) => updateField('phone', v)} error={errors.phone} />
-              <InputField label="現住所" placeholder="マンション名まで正確に" multiline required value={form.address} onChangeText={(v) => updateField('address', v)} error={errors.address} />
+              <InputField label="現住所" placeholder="例:愛知県名古屋市北区1-14" multiline required value={form.address} onChangeText={(v) => updateField('address', v)} error={errors.address} />
               
               <SelectButtons label="本籍地" options={['現住所と同じ', 'その他']} required selectedValue={form.domicileStatus} onSelect={(v) => updateField('domicileStatus', v)} error={errors.domicileStatus} />
               {form.domicileStatus === 'その他' && (
