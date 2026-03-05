@@ -542,7 +542,7 @@ const styles = StyleSheet.create({
   errorTextOnly: { ...fontSettings, color: '#EF5350', fontSize: 14, fontWeight: 'bold', textAlign: 'center' },
   // --- 完了ページのスタイル ---
   successPage: { flex: 1, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center', padding: 20 },
-  successLogo: { width: 180, height: 180, marginBottom: 20 },
+  successLogo: { width: 500, height: 500, marginBottom: 20 },
   successTitle: { ...fontSettings, fontSize: 22, fontWeight: 'bold', color: '#76B148', marginBottom: 10 },
   successMessage: { ...fontSettings, fontSize: 14, color: '#666', textAlign: 'center', lineHeight: 22, marginBottom: 30 },
   backButton: { backgroundColor: '#76B148', paddingVertical: 12, paddingHorizontal: 30, borderRadius: 25 },
