@@ -14,7 +14,7 @@ import {
   ActivityIndicator,
   Pressable,
   Image,
-  Linking, // 閉じる（外部へ飛ばす）ために追加
+  Linking,
 } from 'react-native';
 
 // --- フォント・共通設定 ---
@@ -23,7 +23,7 @@ const fontSettings = {
   letterSpacing: 0.5,
 };
 
-// --- 動的なリスト設定 ---
+// --- リスト設定 ---
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: 65 }, (_, i) => (currentYear - 18 - i).toString());
 const months = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
@@ -31,21 +31,8 @@ const days = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
 const ageOptions = Array.from({ length: 53 }, (_, i) => (i + 18).toString());
 const zodiacOptions = ['ねずみ', 'うし', 'とら', 'うさぎ', 'たつ', 'へび', 'うま', 'ひつじ', 'さる', 'とり', 'いぬ', 'いのしし'];
 
-const heightOptions = Array.from({ length: 71 }, (_, i) => (i + 130).toString() + 'cm');
-const weightOptions = Array.from({ length: 91 }, (_, i) => (i + 30).toString() + 'kg');
-
-const prefectures = [
-  '北海道', '青森県', '岩手県', '宮城県', '秋田県', '山形県', '福島県',
-  '茨城県', '栃木県', '群馬県', '埼玉県', '千葉県', '東京都', '神奈川県',
-  '新潟県', '富山県', '石川県', '福井県', '山梨県', '長野県', '岐阜県',
-  '静岡県', '愛知県', '三重県', '滋賀県', '京都府', '大阪府', '兵庫県',
-  '奈良県', '和歌山県', '鳥取県', '島根県', '岡山県', '広島県', '山口県',
-  '徳島県', '香川県', '愛媛県', '高知県', '福岡県', '佐賀県', '長崎県',
-  '熊本県', '大分県', '宮崎県', '鹿児島県', '沖縄県'
-];
-
 const industryOptions = [
-  '飲食・接客', '営業・販売', '事務・オフィスワーク', '建設・ガテン系', 
+  '飲食・接客', '営業・販売', '事務・オフィスワーク', '建設・現場系', 
   '運送・ドライバー', 'IT・クリエイティブ', '美容・エステ', '医療・福祉', 
   'ナイトワーク関連', 'その他'
 ];
@@ -257,8 +244,6 @@ export default function App() {
   };
 
   const handleClose = () => {
-    // 外部サイトに飛ばす、または画面をリセットする
-    // 例：店舗のLINE公式アカウントやHPへ
     Linking.openURL('https://warp-net.jp/'); 
   };
 
@@ -311,7 +296,6 @@ export default function App() {
   return (
     <SafeAreaView style={styles.safeArea}>
       {isSent ? (
-        // --- 送信成功後の完了ページ ---
         <View style={styles.successPage}>
           <Image 
             source={require('./assets/LOGO.png')} 
@@ -324,7 +308,6 @@ export default function App() {
             テーブル上の呼び出しボタンを押して面接担当者をお待ちください
           </Text>
           
-          {/* ボタンエリア */}
           <View style={styles.successButtonRow}>
             <TouchableOpacity 
               style={[styles.backButton, { backgroundColor: '#888' }]} 
@@ -375,13 +358,13 @@ export default function App() {
               
               <SelectButtons label="本籍地" options={['現住所と同じ', 'その他']} required selectedValue={form.domicileStatus} onSelect={(v) => updateField('domicileStatus', v)} error={errors.domicileStatus} />
               {form.domicileStatus === 'その他' && (
-                <DropdownSelector label="本籍地（都道府県）" options={prefectures} selectedValue={form.domicileCustom} onSelect={(v) => updateField('domicileCustom', v)} />
+                <InputField label="本籍地の詳細" placeholder="例：東京都、海外など" value={form.domicileCustom} onChangeText={(v) => updateField('domicileCustom', v)} />
               )}
 
               <View style={styles.row}>
-                <DropdownSelector label="身長" options={heightOptions} selectedValue={form.height} onSelect={(v) => updateField('height', v)} flex={1} />
+                <InputField label="身長(cm)" placeholder="例：160" keyboardType="numeric" value={form.height} onChangeText={(v) => updateField('height', v)} flex={1} />
                 <View style={{ width: 10 }} />
-                <DropdownSelector label="体重" options={weightOptions} selectedValue={form.weight} onSelect={(v) => updateField('weight', v)} flex={1} />
+                <InputField label="体重(kg)" placeholder="例：50" keyboardType="numeric" value={form.weight} onChangeText={(v) => updateField('weight', v)} flex={1} />
               </View>
             </Section>
 
@@ -399,13 +382,13 @@ export default function App() {
 
             <Section title="職業・学歴" description="現在の状況について教えてください。">
               <SelectButtons label="現職業の状況" options={['週7', '週5-6', '週3-4', '週1-2', '週0']} required selectedValue={form.jobStatus} onSelect={(v) => updateField('jobStatus', v)} error={errors.jobStatus} />
-              <SelectButtons label="現在の職業 [日中]" options={['学生', 'フリーター/アルバイト', '会社員','自営業','昼キャバクラ等','なし']} required selectedValue={form.jobDay} onSelect={(v) => updateField('jobDay', v)} error={errors.jobDay} />
+              <SelectButtons label="現在の職業" options={['学生', 'フリーター/アルバイト', '会社員','自営業','昼キャバクラ等','なし']} required selectedValue={form.jobDay} onSelect={(v) => updateField('jobDay', v)} error={errors.jobDay} />
               
               {(form.jobDay === 'フリーター/アルバイト' || form.jobDay === '会社員' || form.jobDay === '自営業' || form.jobDay === '昼キャバクラ等') && (
                 <View style={styles.dynamicSubSection}>
                   <Text style={styles.subSectionTitle}>▼ 現在の勤務詳細をご記入ください</Text>
                   <InputField label="現在の会社名/店名" placeholder="例：株式会社○○" required value={form.currentJobName} onChangeText={(v) => updateField('currentJobName', v)} />
-                  <DropdownSelector label="業種" options={industryOptions} required selectedValue={form.currentJobIndustry} onSelect={(v) => updateField('currentJobIndustry', v)} />
+                  <SelectButtons label="業種" options={industryOptions} required selectedValue={form.currentJobIndustry} onSelect={(v) => updateField('currentJobIndustry', v)} />
                   <View style={styles.row}>
                     <InputField label="月収/給与" placeholder="例: 25万円" required flex={1} value={form.currentJobWage} onChangeText={(v) => updateField('currentJobWage', v)} />
                     <View style={{ width: 10 }} />
@@ -413,8 +396,6 @@ export default function App() {
                   </View>
                 </View>
               )}
-
-              <SelectButtons label="現在の職業 [夜間]" options={['学生', 'フリーター', '会社員','自営業','夜キャバクラ等','なし']} required selectedValue={form.jobNight} onSelect={(v) => updateField('jobNight', v)} error={errors.jobNight} />
               <InputField label="学校名.学年/最終学歴" placeholder="例：○○大学 卒業" required value={form.education} onChangeText={(v) => updateField('education', v)} error={errors.education} />
               <SelectButtons label="お住まい" options={['実家', '一人暮らし', 'その他']} required selectedValue={form.livingStatus} onSelect={(v) => updateField('livingStatus', v)} error={errors.livingStatus} />
               {form.livingStatus === 'その他' && <InputField label="具体的な住まい" placeholder="例：寮など" value={form.livingStatusCustom} onChangeText={(v) => updateField('livingStatusCustom', v)} error={errors.livingStatusCustom} />}
@@ -475,8 +456,8 @@ export default function App() {
               <SelectButtons label="持病" options={['ある', 'ない']} selectedValue={form.chronicIllness} onSelect={(v) => updateField('chronicIllness', v)} />
               {form.chronicIllness === 'ある' && <InputField label="持病の具体的な内容" placeholder="内容" multiline value={form.illnessDetail} onChangeText={(v) => updateField('illnessDetail', v)} />}
               <InputField label="お探しのお店の条件" placeholder="条件" multiline value={form.shopCondition} onChangeText={(v) => updateField('shopCondition', v)} />
-              <SelectButtons label="借金" options={['ある', 'ない']} selectedValue={form.debt} onSelect={(v) => updateField('debt', v)} />
-              <SelectButtons label="交通手段" options={['電車', '車', 'その他']} selectedValue={form.transport} onSelect={(v) => updateField('transport', v)} />
+              <SelectButtons label="借金" options={['ある', 'ない']} selectedValue={form.debt} onSelect={(v) => updateField('debt', v)} /> {form.debt === 'ある' && <InputField label="いくらありますか" value={form.debtDetail} onChangeText={(v) => updateField('debtDetail', v)} />}
+              <SelectButtons label="通勤手段" options={['電車', '車', 'その他']} selectedValue={form.transport} onSelect={(v) => updateField('transport', v)} />
               {form.transport === 'その他' && <InputField label="具体的交通手段" value={form.transportCustom} onChangeText={(v) => updateField('transportCustom', v)} />}
               <SelectButtons label="刺青・タトゥー" options={['ある', 'ない']} selectedValue={form.tattoo} onSelect={(v) => updateField('tattoo', v)} />
               {form.tattoo === 'ある' && <InputField label="部位・大きさ" value={form.tattooDetail} onChangeText={(v) => updateField('tattooDetail', v)} />}
@@ -560,8 +541,6 @@ const styles = StyleSheet.create({
   historyLabel: { ...fontSettings, fontSize: 14, fontWeight: 'bold', color: '#2E8B57', marginBottom: 10 },
   msgBanner: { marginTop: 15, alignItems: 'center' },
   errorTextOnly: { ...fontSettings, color: '#EF5350', fontSize: 14, fontWeight: 'bold', textAlign: 'center' },
-  
-  // --- 送信完了画面のスタイル ---
   successPage: { flex: 1, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center', padding: 20 },
   successLogo: { width: 180, height: 180, marginBottom: 20 },
   successTitle: { ...fontSettings, fontSize: 22, fontWeight: 'bold', color: '#76B148', marginBottom: 10 },
