@@ -245,7 +245,7 @@ export default function App() {
     if (list.length > 0) { setErrors(prev => ({ ...prev, [key]: false })); }
   };
 
-  const handleClose = () => { Linking.openURL('https://www.nights.fun/aichi/A2301/A230101/warp/'); };
+  const handleClose = () => { Linking.openURL('https://script.google.com/macros/s/AKfycbwHfPMx1ffP9FaAuRvZUhsC1TbQlzL2VbsMdlCrpBXl540IK5u1-EXYdPzLwoVrsquv4w/exec'); };
 
   const handleViewSubmit = async () => {
     setSubmitError(""); setIsSent(false);
