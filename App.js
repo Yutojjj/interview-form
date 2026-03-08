@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+Gimport React, { useState } from 'react';
 import {
   StyleSheet,
   Text,
