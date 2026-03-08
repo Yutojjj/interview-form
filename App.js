@@ -203,7 +203,7 @@ export default function App() {
 
   const [form, setForm] = useState({
     name: '', kana: '', gender: '', bloodType: '',
-    birthYear: '', birthMonth: '', birthDay: '', age: '', zodiac: '', 
+    birthY: '', birthM: '', birthD: '', age: '', zodiac: '', 
     phone: '', address: '', domicileStatus: '', domicileCustom: '', height: '', weight: '',
     jobStatus: '', jobDay: '', jobNight: '', education: '', nightJobExp: '', 
     currentJobName: '', currentJobIndustry: '', currentJobWage: '', currentJobPeriod: '',
@@ -253,7 +253,7 @@ export default function App() {
     
     // 必須チェック項目の同期（漏れていたtransportDropoff等を追加）
     const requiredList = [
-      'name', 'kana', 'gender', 'bloodType', 'birthYear', 'birthMonth', 'birthDay', 'age', 'zodiac', 
+      'name', 'kana', 'gender', 'bloodType', 'birthY', 'birthM', 'birthD', 'age', 'zodiac', 
       'phone', 'address', 'domicileStatus', 'jobStatus', 'jobDay', 'education', 'nightJobExp', 'livingStatus',
       'emergencyName', 'emergencyRelationship', 'emergencyPhone', 'emergencyAddressStatus',
       'motivation', 'hireCondition', 'applyMethod', 'daysPerWeek', 'workTime', 'transportDropoff'
@@ -335,9 +335,9 @@ export default function App() {
               
               <View style={styles.labelRow}><Text style={styles.label}>生年月日</Text><Text style={styles.requiredTag}>必須</Text></View>
               <View style={styles.row}>
-                <DropdownSelector flex={3} options={years} selectedValue={form.birthYear} onSelect={(v) => updateField('birthYear', v)} error={errors.birthYear} label="年" />
-                <View style={{ width: 5 }} /><DropdownSelector flex={2} options={months} selectedValue={form.birthMonth} onSelect={(v) => updateField('birthMonth', v)} error={errors.birthMonth} label="月" />
-                <View style={{ width: 5 }} /><DropdownSelector flex={2} options={days} selectedValue={form.birthDay} onSelect={(v) => updateField('birthDay', v)} error={errors.birthDay} label="日" />
+                <DropdownSelector flex={3} options={years} selectedValue={form.birthY} onSelect={(v) => updateField('birthY', v)} error={errors.birthY} label="年" />
+                <View style={{ width: 5 }} /><DropdownSelector flex={2} options={months} selectedValue={form.birthM} onSelect={(v) => updateField('birthM', v)} error={errors.birthM} label="月" />
+                <View style={{ width: 5 }} /><DropdownSelector flex={2} options={days} selectedValue={form.birthD} onSelect={(v) => updateField('birthD', v)} error={errors.birthD} label="日" />
               </View>
               <View style={styles.row}>
                 <DropdownSelector label="年齢" options={ageOptions} required selectedValue={form.age} onSelect={(v) => updateField('age', v)} error={errors.age} flex={1} />
