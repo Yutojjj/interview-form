@@ -245,7 +245,7 @@ export default function App() {
     if (list.length > 0) { setErrors(prev => ({ ...prev, [key]: false })); }
   };
 
-  const handleClose = () => { Linking.openURL('https://script.google.com/macros/s/AKfycbwHfPMx1ffP9FaAuRvZUhsC1TbQlzL2VbsMdlCrpBXl540IK5u1-EXYdPzLwoVrsquv4w/exec'); };
+  const handleClose = () => { Linking.openURL('https://script.google.com/macros/s/AKfycbyAVd9-8ua9qac1yUQFfrtVvbWfLOYxGNC1pgJbXrO3t_RLfGs8lrbjRnz9zUgeFOdQJA/exec'); };
 
   const handleViewSubmit = async () => {
     setSubmitError(""); setIsSent(false);
