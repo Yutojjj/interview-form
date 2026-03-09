@@ -199,7 +199,7 @@ export default function App() {
     <SafeAreaView style={styles.safeArea}>
       {isSent ? (
         <View style={styles.successPage}>
-          <Image source={require('./assets/LOGO.png')} style={styles.successLogo} resizeMode="contain" />
+          <Image source={require('./assets/LOGO.png')} style={styles.fullWidthLogo} resizeMode="contain" />
           <Text style={styles.successTitle}>送信が完了しました</Text>
           <Text style={styles.successMessage}>面接フォームのご記入ありがとうございます。{"\n"}テーブル上の呼び出しボタンを押してお待ちください。</Text>
           <View style={styles.successButtonRow}>
