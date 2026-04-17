@@ -182,7 +182,7 @@ export default function App() {
 
     setIsSubmitting(true);
     try {
-      const GAS_URL = "https://script.google.com/macros/s/AKfycbwKULarvUZ-f7W9tax050dnM6I4HzsOBiNOqvMWKJ67emshWoaePT7K1PXripjB2nvODw/exec";
+      const GAS_URL = "https://script.google.com/macros/s/AKfycbw0TM1a3SID41l7aHH_ASVMVQUck_6un2O9ZGUlSDBU5o1li71OganzuFbTvzDTVKrR-A/exec";
       const searchParams = new URLSearchParams();
       Object.keys(form).forEach(key => {
         if (Array.isArray(form[key])) { searchParams.append(key, form[key].join(', ')); }
