@@ -182,7 +182,12 @@ export default function App() {
 
     setIsSubmitting(true);
     try {
-      const GAS_URL = "https://script.google.com/macros/s/AKfycbxog8LM9Vq74iiLrHur0DefFsiYHP7roXgY2yZ112-uMy9Q3IgXWGPY3p9x2bsYTB7Ffw/exec";
+const GAS_URL = process.env.EXPO_PUBLIC_GAS_URL_STAFF || '';
+if (!GAS_URL) {
+  setSubmitError('送信先が設定されていません。管理者にお問い合わせください。');
+  setIsSubmitting(false);
+  return;
+}
       const searchParams = new URLSearchParams();
       Object.keys(form).forEach(key => {
         if (Array.isArray(form[key])) { searchParams.append(key, form[key].join(', ')); }
