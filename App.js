@@ -273,8 +273,8 @@ if (!GAS_URL) {
               <SelectButtons label="雇用形態" options={['社員', 'アルバイト']} required selectedValue={form.hireCondition} onSelect={(v) => updateField('hireCondition', v)} error={errors.hireCondition} />
               {form.hireCondition !== '' && (
                 <View style={styles.dynamicSection}>
-                  <Text style={styles.workTimeNotice}>{form.hireCondition === '社員' ? '※社員：17時〜' : '※アルバイト：19時〜'}</Text>
-                  <SelectButtons label="勤務時間" options={form.hireCondition === '社員' ? ['未定', '17時-ラスト', 'その他'] : ['未定', '19時-ラスト', 'その他']} required selectedValue={form.workTime} onSelect={(v) => updateField('workTime', v)} error={errors.workTime} />
+                  <Text style={styles.workTimeNotice}>{form.hireCondition === '社員' ? '※社員：16時〜' : '※アルバイト：19時〜'}</Text>
+                  <SelectButtons label="勤務時間" options={form.hireCondition === '社員' ? ['未定', '16時-ラスト', 'その他'] : ['未定', '19時-ラスト', 'その他']} required selectedValue={form.workTime} onSelect={(v) => updateField('workTime', v)} error={errors.workTime} />
                   {form.workTime === 'その他' && <InputField label="具体的時間を入力" required value={form.workTimeCustom} onChangeText={(v) => updateField('workTimeCustom', v)} error={errors.workTimeCustom} />}
                 </View>
               )}
